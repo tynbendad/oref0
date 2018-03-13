@@ -26,6 +26,7 @@ DIR=""
 directory=""
 EXTRAS=""
 radio_locale="US"
+buildgofromsource=false
 
 #this makes the confirmation echo text a color when you use echocolor instead of echo
 function echocolor() { # $1 = string
@@ -236,7 +237,6 @@ if [[ -z "$DIR" || -z "$serial" ]]; then
         fi
     fi
     read -p "Would you like to [D]ownload precompiled Go pump communication library or build them from [S]ource? [D]/S " -r
-    buildgofromsource=false
     if [[ $REPLY =~ ^[Ss]$ ]]; then
       buildgofromsource=true
       echo "Building Go pump binaries from source"
@@ -710,36 +710,36 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     if [[ ${CGM,,} =~ "g5" || ${CGM,,} =~ "g5-upload" ]]; then
         openaps use cgm config --G5
         openaps report add raw-cgm/raw-entries.json JSON cgm oref0_glucose --hours "24.0" --threshold "100" --no-raw
-    # TODO: figure out if any of this is still needed
-    elif [[ ${CGM,,} =~ "g4-go" ]]; then
-        echo Checking Adafruit_BluefruitLE installation
-        if ! python -c "import Adafruit_BluefruitLE" 2>/dev/null; then
-            if [ -d "$HOME/src/Adafruit_Python_BluefruitLE/" ]; then
-                echo "$HOME/src/Adafruit_Python_BluefruitLE/ already exists; pulling latest master branch"
-                (cd $HOME/src/Adafruit_Python_BluefruitLE && git fetch && git checkout wip/bewest/custom-gatt-profile && git pull) || die "Couldn't pull latest Adafruit_Python_BluefruitLE wip/bewest/custom-gatt-profile"
-            else
-                echo -n "Cloning Adafruit_Python_BluefruitLE wip/bewest/custom-gatt-profile: "
-                # TODO: get this moved over to openaps and install with pip
-                (cd $HOME/src && git clone -b wip/bewest/custom-gatt-profile https://github.com/bewest/Adafruit_Python_BluefruitLE.git) || die "Couldn't clone Adafruit_Python_BluefruitLE wip/bewest/custom-gatt-profile"
-            fi
-            echo Installing Adafruit_BluefruitLE && cd $HOME/src/Adafruit_Python_BluefruitLE && sudo python setup.py develop || die "Couldn't install Adafruit_BluefruitLE"
-        fi
-        sudo apt-get update; sudo apt-get upgrade
-        sudo apt-get -y install bc jq libusb-dev libdbus-1-dev libglib2.0-dev libudev-dev libical-dev libreadline-dev python-dbus || die "Couldn't apt-get install: run 'sudo apt-get update' and try again?"
-        echo Checking bluez installation
-        # start bluetoothd in /etc/rc.local if it is missing.
-        if ! grep -q '/usr/local/bin/bluetoothd &' /etc/rc.local; then
-            sed -i"" 's/^exit 0/\/usr\/local\/bin\/bluetoothd \&\n\nexit 0/' /etc/rc.local
-        fi
-        # starting with bluez 5.48 the --experimental command line option is not needed. remove the --experimental if it still exists in /etc/rc.local. this is for rigs with version 0.6.0 or earlier
-        if ! grep -q '/usr/local/bin/bluetoothd --experimental &' /etc/rc.local; then
-            sed -i"" 's/^\/usr\/local\/bin\/bluetoothd --experimental \&/\/usr\/local\/bin\/bluetoothd \&/' /etc/rc.local
-        fi
-        if ! grep -q 'bluetooth_rfkill_event >/dev/null 2>&1 &' /etc/rc.local; then
-            sed -i"" 's/^exit 0/bluetooth_rfkill_event >\/dev\/null 2>\&1 \&\n\nexit 0/' /etc/rc.local
-        fi
-        # comment out existing line if it exists and isn't already commented out
-        sed -i"" 's/^screen -S "brcm_patchram_plus" -d -m \/usr\/local\/sbin\/bluetooth_patchram.sh/# &/' /etc/rc.local
+    ## TODO: figure out if any of this is still needed
+    #elif [[ ${CGM,,} =~ "g4-go" ]]; then
+        #echo Checking Adafruit_BluefruitLE installation
+        #if ! python -c "import Adafruit_BluefruitLE" 2>/dev/null; then
+            #if [ -d "$HOME/src/Adafruit_Python_BluefruitLE/" ]; then
+                #echo "$HOME/src/Adafruit_Python_BluefruitLE/ already exists; pulling latest master branch"
+                #(cd $HOME/src/Adafruit_Python_BluefruitLE && git fetch && git checkout wip/bewest/custom-gatt-profile && git pull) || die "Couldn't pull latest Adafruit_Python_BluefruitLE wip/bewest/custom-gatt-profile"
+            #else
+                #echo -n "Cloning Adafruit_Python_BluefruitLE wip/bewest/custom-gatt-profile: "
+                ## TODO: get this moved over to openaps and install with pip
+                #(cd $HOME/src && git clone -b wip/bewest/custom-gatt-profile https://github.com/bewest/Adafruit_Python_BluefruitLE.git) || die "Couldn't clone Adafruit_Python_BluefruitLE wip/bewest/custom-gatt-profile"
+            #fi
+            #echo Installing Adafruit_BluefruitLE && cd $HOME/src/Adafruit_Python_BluefruitLE && sudo python setup.py develop || die "Couldn't install Adafruit_BluefruitLE"
+        #fi
+        #sudo apt-get update; sudo apt-get upgrade
+        #sudo apt-get -y install bc jq libusb-dev libdbus-1-dev libglib2.0-dev libudev-dev libical-dev libreadline-dev python-dbus || die "Couldn't apt-get install: run 'sudo apt-get update' and try again?"
+        #echo Checking bluez installation
+        ## start bluetoothd in /etc/rc.local if it is missing.
+        #if ! grep -q '/usr/local/bin/bluetoothd &' /etc/rc.local; then
+            #sed -i"" 's/^exit 0/\/usr\/local\/bin\/bluetoothd \&\n\nexit 0/' /etc/rc.local
+        #fi
+        ## starting with bluez 5.48 the --experimental command line option is not needed. remove the --experimental if it still exists in /etc/rc.local. this is for rigs with version 0.6.0 or earlier
+        #if ! grep -q '/usr/local/bin/bluetoothd --experimental &' /etc/rc.local; then
+            #sed -i"" 's/^\/usr\/local\/bin\/bluetoothd --experimental \&/\/usr\/local\/bin\/bluetoothd \&/' /etc/rc.local
+        #fi
+        #if ! grep -q 'bluetooth_rfkill_event >/dev/null 2>&1 &' /etc/rc.local; then
+            #sed -i"" 's/^exit 0/bluetooth_rfkill_event >\/dev\/null 2>\&1 \&\n\nexit 0/' /etc/rc.local
+        #fi
+        ## comment out existing line if it exists and isn't already commented out
+        #sed -i"" 's/^screen -S "brcm_patchram_plus" -d -m \/usr\/local\/sbin\/bluetooth_patchram.sh/# &/' /etc/rc.local
     fi
 
     # TODO: deprecate g4-upload and g4-local-only
@@ -1039,9 +1039,13 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         cd $HOME/myopenaps && openaps alias remove battery-status; openaps alias add battery-status '! bash -c "sudo ~/src/openaps-menu/scripts/getvoltage.sh > monitor/edison-battery.json"'
     fi
 
+    echo "Clearing retrieved apt packages to free space."
+    apt-get autoclean && apt-get clean
+
     # install Go for Explorer Board/HAT
     if [[ "$ttyport" =~ "spidev" ]] || [[ ${CGM,,} =~ "g4-go" ]]; then
       if $buildgofromsource; then
+        source $HOME/.bash_profile
         if go version | grep go1.9.; then
             echo Go already installed
         else
@@ -1090,9 +1094,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
             echo 916550000 > $HOME/myopenaps/monitor/medtronic_frequency.ini
           fi
         else
-          arch=arm
+          arch=arm-spi
           if egrep -i "edison" /etc/passwd 2>/dev/null; then
-            arch=386
+            arch=386-spi
           fi
           mkdir -p $HOME/go/bin && \
           downloadUrl=$(curl -s https://api.github.com/repos/ecc1/medtronic/releases/latest | \
@@ -1113,9 +1117,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         fi
         rsync -rtuv $HOME/go/bin/ /usr/local/bin/ || die "Couldn't rsync go/bin"
     fi
-
-    echo "Clearing retrieved apt packages to free space."
-    apt-get autoclean && apt-get clean
 
     #if [[ "$ttyport" =~ "spi" ]]; then
         #echo Resetting spi_serial

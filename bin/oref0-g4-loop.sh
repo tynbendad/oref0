@@ -22,7 +22,15 @@ main() {
     fi
 
     show_last_record
+    if clock_diff; then
+        echo -n "Setting G4 clock to: "
+        g4setclock now
+    fi
     echo Completed oref0-g4-loop at $(date)
+}
+
+function clock_diff {
+    tail -25 /var/log/openaps/cgm-loop.log | egrep -q "clock diff.*[1-9]m"
 }
 
 function show_last_record {
