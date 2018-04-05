@@ -20,6 +20,8 @@ main() {
         update_data
         g4update -u 2>&1
     fi
+    get_cal_records
+    add_raw_sgvs
 
     show_last_record
     if clock_diff; then
@@ -34,7 +36,15 @@ function clock_diff {
 }
 
 function show_last_record {
-    cat cgm/g4-glucose.json | jq -c -C '.[0] | { sgv: .sgv, dateString: .dateString }'
+    cat cgm/cgm-glucose.json | jq -c -C '.[0] | { sgv: .sgv, dateString: .dateString }'
+}
+
+function get_cal_records {
+    cat cgm/g4-glucose.json | jq 'map(select(.type | contains("cal")))' > cgm/cal.json
+}
+
+function add_raw_sgvs {
+    oref0 raw cgm/g4-glucose.json cgm/cal.json 160 > cgm/cgm-glucose.json
 }
 
 function enough_data {
