@@ -200,7 +200,7 @@ if [[ -z "$DIR" || -z "$serial" ]]; then
         echo
     fi
 
-    if grep -qa "Explorer HAT" /proc/device-tree/hat/product ; then
+    if grep -qa "Explorer HAT" /proc/device-tree/hat/product 2>/dev/null ; then
         echocolor "Explorer Board HAT detected. "
         ttyport=/dev/spidev0.0
     else
@@ -243,7 +243,7 @@ if [[ -z "$DIR" || -z "$serial" ]]; then
     else
       echo "Downloading precompiled Go pump binaries."
     fi
-    
+
 
 
     if [[ ! -z "${ttyport}" ]]; then
@@ -619,7 +619,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     sudo cp $HOME/src/oref0/logrotate.rsyslog /etc/logrotate.d/rsyslog || die "Could not cp /etc/logrotate.d/rsyslog"
 
     test -d /var/log/openaps || sudo mkdir /var/log/openaps && sudo chown $USER /var/log/openaps || die "Could not create /var/log/openaps"
-    
+
     if [[ -f /etc/cron.daily/logrotate ]]; then
         mv -f /etc/cron.daily/logrotate /etc/cron.hourly/logrotate
     fi
@@ -908,7 +908,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     # xdrip CGM (xDripAPS)
     if [[ ${CGM,,} =~ "xdrip" ]]; then
         echo xdrip selected as CGM, so configuring xDripAPS
-        sudo apt-get install sqlite3 || die "Can't add xdrip cgm - error installing sqlite3"
+        sudo apt-get -y install sqlite3 || die "Can't add xdrip cgm - error installing sqlite3"
         git clone https://github.com/colinlennon/xDripAPS.git $HOME/.xDripAPS
         mkdir -p $HOME/.xDripAPS_data
         for type in xdrip-cgm; do
@@ -1033,7 +1033,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo
 
     #Check to see if Explorer HAT is present, and install all necessary stuff
-    if grep -a "Explorer HAT" /proc/device-tree/hat/product || [[ "$ttyport" =~ "spidev0.0" ]]; then
+    if grep -qa "Explorer HAT" /proc/device-tree/hat/product || [[ "$ttyport" =~ "spidev0.0" ]]; then
         echo "Looks like you're using an Explorer HAT!"
         echo "Making sure SPI is enabled..."
         sed -i.bak -e "s/#dtparam=spi=on/dtparam=spi=on/" /boot/config.txt
@@ -1084,7 +1084,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     fi
     mkdir -p $HOME/go
     source $HOME/.bash_profile
-    
+
     #Store radio_locale for later use
     grep -q radio_locale pump.ini || echo "radio_locale=$radio_locale" >> pump.ini
     #Necessary to "bootstrap" Go commands...
@@ -1093,7 +1093,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     else
       echo 916550000 > $HOME/myopenaps/monitor/medtronic_frequency.ini
     fi
-    
+
     if [[ "$ttyport" =~ "spidev" ]]; then
         if $buildgofromsource; then
           #go get -u -v github.com/ecc1/cc111x || die "Couldn't go get cc111x"
